@@ -80,6 +80,8 @@ $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
+-- Only the trigger above may run it; nobody can call it through the API.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
 
 -- Security: customers can only read their own profile and their own saved projects.
 -- Permits are served through the website's server, which checks the customer's plan first.
