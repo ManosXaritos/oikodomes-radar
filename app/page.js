@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Logo from './components/Logo';
 import Footer from './components/Footer';
 import Pricing from './components/Pricing';
-import { PRODUCTS } from '../lib/classify';
+import { PRODUCTS, PRODUCT_GROUPS } from '../lib/classify';
 import s from './landing.module.css';
 
 const EXAMPLES = [
@@ -76,9 +76,14 @@ export default function Home() {
 
         <section className={`wrap ${s.section}`}>
           <h2 className={s.h2}>Για ποιους είναι</h2>
-          <div className="chips">
-            {Object.values(PRODUCTS).map((p) => <span key={p.label} className="chip">{p.label}</span>)}
-          </div>
+          {PRODUCT_GROUPS.map(([g, label, keys]) => (
+            <div key={g} style={{ marginBottom: 14 }}>
+              <div className="fine" style={{ fontWeight: 700, marginBottom: 6 }}>{label}</div>
+              <div className="chips">
+                {keys.map((k) => <span key={k} className="chip">{PRODUCTS[k].label}</span>)}
+              </div>
+            </div>
+          ))}
           <p className={s.pitch}>
             Μία πολυκατοικία έχει 60 έως 80 κουφώματα. Αν σου φέρει μία δουλειά τον χρόνο, η συνδρομή έχει πληρωθεί πολλές φορές.
           </p>

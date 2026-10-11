@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { TYPES, PRODUCTS, PHASES, fits, needWindow, stageOffsetMonths } from '../../lib/classify';
+import { TYPES, PRODUCTS, PRODUCT_GROUPS, phasesFor, fits, needWindow, stageOffsetMonths } from '../../lib/classify';
 import { municipalityName } from '../../lib/geo';
 import s from './dashboard.module.css';
 
@@ -129,7 +129,15 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
               <label htmlFor="product">Τι πουλάς;</label>
               <select id="product" className="input" value={product} onChange={(e) => setProduct(e.target.value)}>
                 {productChoices.length > 1 && <option value="all">Όλα τα έργα</option>}
-                {productChoices.map((k) => <option key={k} value={k}>{PRODUCTS[k].label}</option>)}
+                {PRODUCT_GROUPS.map(([g, label, keys]) => {
+                  const ks = keys.filter((k) => productChoices.includes(k));
+                  if (!ks.length) return null;
+                  return (
+                    <optgroup key={g} label={label}>
+                      {ks.map((k) => <option key={k} value={k}>{PRODUCTS[k].label}</option>)}
+                    </optgroup>
+                  );
+                })}
               </select>
             </div>
             <div className={s.row2}>
@@ -210,7 +218,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
 
         <div className={`card ${s.dossierCol}`}>
           {current ? (
-            <Dossier key={current.ada} p={current} product={product} lead={data.leads[current.ada]} onSave={saveLead} onUnfollow={unfollow} />
+            <Dossier key={current.ada} p={current} product={product} picked={products} lead={data.leads[current.ada]} onSave={saveLead} onUnfollow={unfollow} />
           ) : (
             <div className={s.empty}>Διάλεξε μια άδεια από τη λίστα ή τον χάρτη.</div>
           )}
@@ -230,13 +238,13 @@ function Kpi({ k, v, sub }) {
   );
 }
 
-function Dossier({ p, product, lead, onSave, onUnfollow }) {
+function Dossier({ p, product, picked, lead, onSave, onUnfollow }) {
   const [note, setNote] = useState(lead?.note || '');
   const [remind, setRemind] = useState(lead?.remind_on || '');
   const [saved, setSaved] = useState('');
   const off = stageOffsetMonths(p.stage);
   const maxM = 18;
-  const phases = PHASES.filter(([, , , k]) => !k || fits(p, k));
+  const phases = phasesFor(p, product === 'all' ? picked : [...picked, product]);
   let next = null;
   if (product !== 'all') {
     if (fits(p, product)) {
@@ -277,7 +285,7 @@ function Dossier({ p, product, lead, onSave, onUnfollow }) {
         {phases.map(([name, a, b, k]) => (
           <div key={name} className={`${s.tlRow}${k === product ? ` ${s.mine}` : ''}`}>
             <span>{name}</span>
-            <div className={s.track}><div className={s.tlBar} style={{ left: `${((a + off) / maxM) * 100}%`, width: `${((b - a) / maxM) * 100}%` }} /></div>
+            <div className={s.track}><div className={s.tlBar} style={{ left: `${(Math.min(a + off, maxM - 1) / maxM) * 100}%`, width: `${((Math.min(b + off, maxM) - Math.min(a + off, maxM - 1)) / maxM) * 100}%` }} /></div>
           </div>
         ))}
         <div className={s.axis}><span /><div><span>τώρα</span><span>6 μήνες</span><span>12</span><span>18</span></div></div>

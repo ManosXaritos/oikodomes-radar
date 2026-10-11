@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { PLANS, hasAccess } from '../../../lib/plans';
 import { REGIONS, UNITS } from '../../../lib/geo';
-import { PRODUCTS } from '../../../lib/classify';
+import { PRODUCTS, PRODUCT_GROUPS } from '../../../lib/classify';
 
 const STATUS = {
   trialing: 'Δωρεάν δοκιμή',
@@ -140,13 +140,18 @@ export default function SettingsForm({ initial, welcome }) {
 
           <div className="field">
             <label>{oneProduct ? 'Τι πουλάς (μία κατηγορία)' : 'Τι πουλάς (όσα θέλεις)'}</label>
-            <div className="chips">
-              {Object.entries(PRODUCTS).map(([k, p]) => (
-                <button key={k} type="button" className="chip" aria-pressed={s.products.includes(k)} onClick={() => toggleProduct(k)}>
-                  {p.label}
-                </button>
-              ))}
-            </div>
+            {PRODUCT_GROUPS.map(([g, label, keys]) => (
+              <div key={g} style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                <span className="fine" style={{ fontWeight: 700 }}>{label}</span>
+                <div className="chips">
+                  {keys.map((k) => (
+                    <button key={k} type="button" className="chip" aria-pressed={s.products.includes(k)} onClick={() => toggleProduct(k)}>
+                      {PRODUCTS[k].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
             {!oneProduct && <span className="fine">Αν δεν διαλέξεις τίποτα, βλέπεις όλα τα έργα.</span>}
           </div>
         </section>
