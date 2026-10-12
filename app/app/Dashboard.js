@@ -8,12 +8,12 @@ import s from './dashboard.module.css';
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false, loading: () => <div className={s.mapLoading}>Φορτώνει ο χάρτης…</div> });
 
-const LEAD_STATUS = { new: 'Νέο', contacted: 'Μίλησα', offer: 'Έστειλα προσφορά', won: 'Κερδίθηκε', lost: 'Χάθηκε' };
+const LEAD_STATUS = { new: 'Νέο', contacted: 'Μίλησα', offer: 'Προσφορά', won: 'Κερδήθηκε', lost: 'Χάθηκε' };
 const dayShort = (d) => new Date(d).toLocaleDateString('el-GR', { day: 'numeric', month: 'short' });
 const dayLong = (d) => new Date(d).toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 const monthYear = (d) => d.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
 
-export default function Dashboard({ plan, products, status, trialEnd, focus }) {
+export default function Dashboard({ plan, products, status, trialEnd, focus, card }) {
   const [days, setDays] = useState(30);
   const [data, setData] = useState({ permits: [], leads: {}, places: {} });
   const [load, setLoad] = useState('loading'); // loading | ready | error
@@ -115,11 +115,17 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
         </div>
       )}
 
+      {load === 'ready' && (
+        <h1 className={s.hello}>
+          Βρήκαμε <span>{matches === null ? visible.length : matches} {(matches === null ? visible.length : matches) === 1 ? 'έργο' : 'έργα'}</span>
+          {matches === null ? '' : ` για ${PRODUCTS[product].phase.toLowerCase()}`} τις τελευταίες {days} μέρες.
+        </h1>
+      )}
       <section className={s.kpis} aria-label="Σύνοψη">
         <Kpi k="Νέες άδειες" v={visible.length} sub={`τις τελευταίες ${days} μέρες`} />
         {matches === null ? <Kpi k="Μεγάλα έργα" v={big} sub="πολυκατοικίες, τουριστικά, επαγγελματικά" /> : <Kpi k="Ταιριάζουν σε σένα" v={matches} sub={PRODUCTS[product].label} />}
         <Kpi k="Προεγκρίσεις" v={pre} sub="ξεκινούν σε λίγους μήνες" />
-        <Kpi k="Παρακολουθείς" v={following} sub="έργα στη λίστα σου" />
+        <Kpi k="Τα έργα μου" v={following} sub="έργα που παρακολουθείς" />
       </section>
 
       <section className={s.main}>
@@ -154,7 +160,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
                 <label htmlFor="view">Εμφάνιση</label>
                 <select id="view" className="input" value={view} onChange={(e) => setView(e.target.value)}>
                   <option value="all">Όλες οι άδειες</option>
-                  <option value="following">Μόνο όσες παρακολουθώ</option>
+                  <option value="following">Μόνο «Τα έργα μου»</option>
                 </select>
               </div>
             </div>
@@ -179,7 +185,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
             {load === 'error' && <div className={s.empty}>Δεν φορτώθηκαν οι άδειες. Ανανέωσε τη σελίδα σε λίγο.</div>}
             {load === 'ready' && !visible.length && (
               <div className={s.empty}>
-                {view === 'following' ? 'Δεν παρακολουθείς ακόμα κανένα έργο. Άνοιξε μια άδεια και πάτα «Παρακολούθηση».' : 'Καμία άδεια με αυτά τα φίλτρα. Μεγάλωσε την περίοδο ή αφαίρεσε ένα φίλτρο.'}
+                {view === 'following' ? 'Δεν παρακολουθείς ακόμα κανένα έργο. Άνοιξε μια άδεια και πάτα «+ Στα έργα μου».' : 'Καμία άδεια με αυτά τα φίλτρα. Μεγάλωσε την περίοδο ή αφαίρεσε ένα φίλτρο.'}
               </div>
             )}
             {load === 'ready' &&
@@ -218,7 +224,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus }) {
 
         <div className={`card ${s.dossierCol}`}>
           {current ? (
-            <Dossier key={current.ada} p={current} product={product} picked={products} lead={data.leads[current.ada]} onSave={saveLead} onUnfollow={unfollow} />
+            <Dossier key={current.ada} p={current} product={product} picked={products} card={card} lead={data.leads[current.ada]} onSave={saveLead} onUnfollow={unfollow} />
           ) : (
             <div className={s.empty}>Διάλεξε μια άδεια από τη λίστα ή τον χάρτη.</div>
           )}
@@ -238,7 +244,7 @@ function Kpi({ k, v, sub }) {
   );
 }
 
-function Dossier({ p, product, picked, lead, onSave, onUnfollow }) {
+function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
   const [note, setNote] = useState(lead?.note || '');
   const [remind, setRemind] = useState(lead?.remind_on || '');
   const [saved, setSaved] = useState('');
@@ -295,11 +301,12 @@ function Dossier({ p, product, picked, lead, onSave, onUnfollow }) {
       <div className={s.actions}>
         <a className="btn primary" href={p.document_url} target="_blank" rel="noopener noreferrer">Άνοιξε την άδεια στη Διαύγεια ↗</a>
         {lead ? (
-          <button type="button" className="btn" onClick={() => onUnfollow(p.ada)}>Σταμάτα την παρακολούθηση</button>
+          <button type="button" className="btn" onClick={() => onUnfollow(p.ada)}>✓ Στα έργα μου · αφαίρεση</button>
         ) : (
-          <button type="button" className="btn" onClick={() => onSave(p.ada, { status: 'new' })}>Παρακολούθηση</button>
+          <button type="button" className="btn ghost" onClick={() => onSave(p.ada, { status: 'new' })}>+ Στα έργα μου</button>
         )}
       </div>
+      <ShareCard p={p} card={card} />
       <p className="fine" style={{ margin: 0 }}>
         Στο έγγραφο της άδειας θα βρεις τη διεύθυνση του έργου και τον μηχανικό. Μίλα με τον μηχανικό ή επισκέψου το εργοτάξιο. Μην καλείς ιδιοκτήτες ιδιώτες.
       </p>
@@ -335,6 +342,37 @@ function Fact({ k, v }) {
     <div className={s.fact}>
       <div className={s.fk}>{k}</div>
       <div className={s.fv}>{v}</div>
+    </div>
+  );
+}
+
+function ShareCard({ p, card }) {
+  const [copied, setCopied] = useState(false);
+  if (!card) {
+    return (
+      <div className={s.share}>
+        <b>Στείλε στον μηχανικό τη δουλειά σου, όχι μόνο ένα τηλέφωνο.</b>
+        <span className="fine">Φτιάξε τη σελίδα σου με φωτογραφίες από δουλειές σου και στείλε του το link.</span>
+        <Link className="btn small ghost" style={{ alignSelf: 'flex-start' }} href="/app/profile">Φτιάξε το προφίλ σου →</Link>
+      </div>
+    );
+  }
+  const text = `Καλησπέρα σας. Είμαι από «${card.name}»${card.headline ? ` (${card.headline})` : ''}. Είδα ότι εκδόθηκε η άδεια για το έργο «${p.title}» (${municipalityName(p.municipality_code)}). Μπορείτε να δείτε δουλειές μας εδώ: ${card.url}\nΘα χαρώ να σας στείλω προσφορά όταν έρθει η ώρα.`;
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {}
+  }
+  return (
+    <div className={s.share}>
+      <b>Στείλε στον μηχανικό τη σελίδα σου</b>
+      <span className="fine" style={{ whiteSpace: 'pre-line' }}>{text}</span>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <button type="button" className="btn small primary" onClick={copy}>{copied ? '✓ Αντιγράφηκε' : 'Αντιγραφή μηνύματος'}</button>
+        <a className="btn small" href={`mailto:?subject=${encodeURIComponent(`Για το έργο: ${p.title}`)}&body=${encodeURIComponent(text)}`}>Email</a>
+      </div>
     </div>
   );
 }

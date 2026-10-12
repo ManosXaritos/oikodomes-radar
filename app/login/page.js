@@ -8,11 +8,12 @@ export default function LoginPage({ searchParams }) {
   const plan = typeof searchParams.plan === 'string' ? searchParams.plan : '';
   const error = searchParams.error === 'link';
   return (
-    <main className="wrap" style={{ maxWidth: 460, paddingBlock: '48px 64px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="grid-bg" style={{ minHeight: '100vh' }}>
+    <main className="wrap" style={{ maxWidth: 480, paddingBlock: '48px 64px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Logo />
-      <div className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16, borderColor: 'rgba(61,255,160,.3)', boxShadow: '0 0 60px rgba(61,255,160,.08)' }}>
         <div>
-          <h1 className="disp" style={{ margin: 0, fontSize: 26 }}>Σύνδεση ή εγγραφή</h1>
+          <h1 className="disp" style={{ margin: 0, fontSize: 28 }}>Σύνδεση ή εγγραφή</h1>
           <p className="muted" style={{ margin: '6px 0 0' }}>
             Γράψε το email σου και θα σου στείλουμε έναν σύνδεσμο. Δεν χρειάζεσαι κωδικό.
           </p>
@@ -21,5 +22,6 @@ export default function LoginPage({ searchParams }) {
         <LoginForm next={plan ? `/app/plan?choose=${encodeURIComponent(plan)}` : next} />
       </div>
     </main>
+    </div>
   );
 }

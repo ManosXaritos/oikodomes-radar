@@ -42,7 +42,7 @@ export async function GET(request) {
     : { data: [] };
 
   // Followed projects are returned even if they are older than the chosen period.
-  const { data: leads } = await db.from('saved_leads').select('ada,status,note,remind_on,updated_at').eq('user_id', user.id);
+  const { data: leads } = await db.from('saved_leads').select('ada,status,note,remind_on,amount,updated_at').eq('user_id', user.id);
   const have = new Set((permits || []).map((p) => p.ada));
   const missing = (leads || []).map((l) => l.ada).filter((a) => !have.has(a));
   let extra = [];

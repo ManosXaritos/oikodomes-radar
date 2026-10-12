@@ -20,6 +20,7 @@ export async function POST(request) {
     status: STATUSES.includes(b.status) ? b.status : 'new',
     note: typeof b.note === 'string' ? b.note.slice(0, 4000) : '',
     remind_on: /^\d{4}-\d{2}-\d{2}$/.test(b.remind_on || '') ? b.remind_on : null,
+    amount: Number.isFinite(Number(b.amount)) && Number(b.amount) > 0 ? Math.min(Math.round(Number(b.amount)), 100000000) : null,
     updated_at: new Date().toISOString(),
   };
   const { error } = await adminClient().from('saved_leads').upsert(row, { onConflict: 'user_id,ada' });

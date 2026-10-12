@@ -61,7 +61,7 @@ export default function MapView({ points, selected, onSelect }) {
       const isSel = p.ada === selected;
       const m = leaflet.circleMarker([lat, lon], {
         radius: isSel ? 10 : 7,
-        color: isSel ? color('--ink') : p.hl ? color('--warn') : color('--panel'),
+        color: isSel ? '#FFFFFF' : p.hl ? color('--accent2') : '#07090A',
         weight: isSel || p.hl ? 3 : 2,
         fillColor: p.stage === 'pre' ? color('--pre') : color('--ok'),
         fillOpacity: p.dim ? 0.2 : 0.95,

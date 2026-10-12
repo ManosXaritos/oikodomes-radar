@@ -4,6 +4,7 @@ import { toPermit, fetchNewPermits, cleanTitle, stageOf } from '../lib/diavgeia.
 import { typeOf, hasPool, fits, needWindow } from '../lib/classify.js';
 import { MUNICIPALITIES, UNITS, REGIONS, unitOf, regionOf, municipalityName } from '../lib/geo.js';
 import { sanitizeSettings, inArea, allowedUnits, needsSetup, hasAccess } from '../lib/plans.js';
+import { slugify, validSlug, cleanProfile, cleanWork } from '../lib/profile.js';
 
 let n = 0;
 const t = (name, fn) => {
@@ -104,5 +105,22 @@ const since = new Date(1791200500000);
 const got = await fetchNewPermits(since, { pageSize: 3, fetchImpl: fakeFetch });
 assert.deepEqual(got.map((p) => p.ada).sort(), ['9ΩΘ746Ψ842-Χ3Ψ', 'Ψ2ΛΞ46Ψ842-0Δ0'].sort());
 n++;
+
+// Profiles
+t('profile helpers', () => {
+  assert.equal(slugify('Αλουμίνια Παπαδόπουλος'), 'alouminia-papadopoulos');
+  assert.equal(slugify('  Κουζίνες & Ντουλάπες Χ.  '), 'kouzines-ntoulapes-ch');
+  assert.equal(validSlug('alouminia-papadopoulos'), true);
+  assert.equal(validSlug('app'), false);
+  assert.equal(validSlug('ab'), false);
+  const p = cleanProfile({ name: ' Test ', slug: 'Δοκιμή 1', trades: ['windows', 'nope'], website: 'javascript:alert(1)', public_email: 'x', since_year: '1800', published: 'yes' });
+  assert.equal(p.slug, 'dokimi-1');
+  assert.deepEqual(p.trades, ['windows']);
+  assert.equal(p.website, '');
+  assert.equal(p.public_email, '');
+  assert.equal(p.since_year, null);
+  assert.equal(p.published, false);
+  assert.equal(cleanWork({ title: 'Χ', category: 'bad' }).category, '');
+});
 
 console.log(`All ${n} checks passed.`);

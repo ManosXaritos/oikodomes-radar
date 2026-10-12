@@ -29,11 +29,12 @@ This guide takes you from these files to a live website. You don't need to write
    Save the database password somewhere safe.
 2. When the project is ready: left menu → **SQL Editor** → **New query**.
 3. Open the file `supabase/schema.sql`, copy everything, paste it in, click **Run**. You should see "Success".
-4. Left menu → **Project Settings** → **API**. Keep this page open; you'll copy three values in Step 4:
+4. Then do the same with `supabase/profiles.sql` (tradesman profiles, photos, quote requests).
+5. Left menu → **Project Settings** → **API**. Keep this page open; you'll copy three values in Step 4:
    - Project URL
    - `anon` `public` key
    - `service_role` key (secret: never share it)
-5. Left menu → **Authentication** → **URL Configuration**. You'll fill this in Step 5.
+6. Left menu → **Authentication** → **URL Configuration**. You'll fill this in Step 5.
 
 ## Step 3 — Set up payments (Stripe)
 
