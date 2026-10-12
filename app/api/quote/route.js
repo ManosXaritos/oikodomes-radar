@@ -30,7 +30,7 @@ export async function POST(request) {
   if (!hasAccess(owner)) return NextResponse.json({ error: 'Η σελίδα δεν βρέθηκε.' }, { status: 404 });
 
   // At most 5 requests per hour from the same connection.
-  const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+  const ip = request.ip || request.headers.get('x-real-ip') || (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
   const ip_hash = createHash('sha256').update(`${ip}|${process.env.CRON_SECRET || ''}`).digest('hex').slice(0, 32);
   const { count } = await db.from('quote_requests').select('id', { count: 'exact', head: true }).eq('ip_hash', ip_hash).gte('created_at', new Date(Date.now() - 3600e3).toISOString());
   if ((count || 0) >= 5) return NextResponse.json({ error: 'Έστειλες πολλά αιτήματα. Δοκίμασε ξανά σε λίγο.' }, { status: 429 });
@@ -38,7 +38,9 @@ export async function POST(request) {
   const { error } = await db.from('quote_requests').insert({ ...req, profile_user_id: prof.user_id, ip_hash });
   if (error) return NextResponse.json({ error: 'Δεν στάλθηκε. Δοκίμασε ξανά.' }, { status: 500 });
 
-  if (owner?.email && process.env.RESEND_API_KEY) {
+  // Still saved, but stop emailing after 20 requests a day for one profile.
+  const { count: today } = await db.from('quote_requests').select('id', { count: 'exact', head: true }).eq('profile_user_id', prof.user_id).gte('created_at', new Date(Date.now() - 864e5).toISOString());
+  if (owner?.email && process.env.RESEND_API_KEY && (today || 0) <= 20) {
     const rows = [['Όνομα', req.name], ['Τηλέφωνο', req.phone], ['Email', req.email], ['Έργο', req.project], ['Περιοχή', req.area], ['Μήνυμα', req.message]].filter(([, v]) => v);
     await sendEmail({
       to: owner.email,

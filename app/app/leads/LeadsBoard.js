@@ -74,7 +74,7 @@ export default function LeadsBoard({ initial }) {
       {!items.length ? (
         <div className={`card ${s.empty}`}>
           <b>Δεν παρακολουθείς ακόμα κανένα έργο.</b>
-          <span className="muted">Άνοιξε μια άδεια στον χάρτη και πάτα «Παρακολούθηση». Θα εμφανιστεί εδώ, στη στήλη «Νέα».</span>
+          <span className="muted">Άνοιξε μια άδεια στον χάρτη και πάτα «+ Στα έργα μου». Θα εμφανιστεί εδώ, στη στήλη «Νέα».</span>
           <Link className="btn primary" href="/app">Πήγαινε στον χάρτη</Link>
         </div>
       ) : (

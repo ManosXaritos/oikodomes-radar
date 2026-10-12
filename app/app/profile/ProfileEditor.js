@@ -31,6 +31,8 @@ async function shrink(file) {
 export default function ProfileEditor({ initial, saved, active, site, works: initialWorks, quotes }) {
   const [p, setP] = useState({ ...initial, since_year: initial.since_year || '', tagsText: (initial.tags || []).join(', ') });
   const [exists, setExists] = useState(saved);
+  const [savedSlug, setSavedSlug] = useState(saved ? initial.slug : '');
+  const [isPublic, setIsPublic] = useState(saved && initial.published);
   const [state, setState] = useState('idle');
   const [msg, setMsg] = useState('');
   const [works, setWorks] = useState(initialWorks);
@@ -41,7 +43,7 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
     setState('idle');
   };
   const toggleTrade = (k) => setP((x) => ({ ...x, trades: x.trades.includes(k) ? x.trades.filter((t) => t !== k) : [...x.trades, k] }));
-  const link = `${site}/m/${p.slug}`;
+  const link = `${site}/m/${savedSlug}`;
 
   async function save(e, publish) {
     e?.preventDefault();
@@ -56,6 +58,8 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
     }
     setP((x) => ({ ...x, slug: json.profile.slug, published: json.profile.published }));
     setExists(true);
+    setSavedSlug(json.profile.slug);
+    setIsPublic(json.profile.published);
     setState('saved');
     setMsg(json.profile.published ? 'Αποθηκεύτηκε. Η σελίδα σου είναι δημόσια.' : 'Αποθηκεύτηκε. Η σελίδα δεν είναι ακόμα δημόσια.');
   }
@@ -78,13 +82,13 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
             Βάλε τις δουλειές σου, τις περιοχές σου και ένα τηλέφωνο. Όταν βρεις νέα οικοδομή στο Radar, στέλνεις αυτό το link στον μηχανικό ή στον εργολάβο.
           </p>
         </div>
-        {exists && p.published && (
+        {exists && isPublic && savedSlug && (
           <div className={`card ${s.linkBox}`}>
             <span className="label">Η σελίδα σου</span>
-            <a className="mono" href={`/m/${p.slug}`} target="_blank" rel="noopener noreferrer">{link.replace(/^https?:\/\//, '')}</a>
+            <a className="mono" href={`/m/${savedSlug}`} target="_blank" rel="noopener noreferrer">{link.replace(/^https?:\/\//, '')}</a>
             <div style={{ display: 'flex', gap: 6 }}>
               <button type="button" className="btn small primary" onClick={copy}>{copied ? '✓ Αντιγράφηκε' : 'Αντιγραφή link'}</button>
-              <a className="btn small" href={`/m/${p.slug}`} target="_blank" rel="noopener noreferrer">Άνοιγμα ↗</a>
+              <a className="btn small" href={`/m/${savedSlug}`} target="_blank" rel="noopener noreferrer">Άνοιγμα ↗</a>
             </div>
           </div>
         )}

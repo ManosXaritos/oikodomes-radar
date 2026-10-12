@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getStripe } from '../../../../lib/stripe';
 import { adminClient } from '../../../../lib/supabase/admin';
 import { planFromPriceId, sanitizeSettings } from '../../../../lib/plans';
+import { refreshProfile } from '../../../../lib/refreshProfile';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,7 @@ async function syncSubscription(sub, fallbackUserId) {
       ...settings,
     })
     .eq('id', profile.id);
+  await refreshProfile(profile.id);
 }
 
 export async function POST(request) {

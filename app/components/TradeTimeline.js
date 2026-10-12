@@ -6,8 +6,8 @@ const MAX = 18;
 const KEY = ['windows', 'ac', 'floors', 'kitchen', 'pv'];
 const monthYear = (base, m) => {
   const d = new Date(base);
-  d.setMonth(d.getMonth() + m);
-  return d.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
+  d.setUTCMonth(d.getUTCMonth() + m);
+  return d.toLocaleDateString('el-GR', { month: 'long', year: 'numeric', timeZone: 'Europe/Athens' });
 };
 
 // "What do you sell?" picker: shows when an example building will need that trade.
@@ -18,7 +18,7 @@ export default function TradeTimeline({ base }) {
   const sel = PRODUCTS[pick];
   const rows = [['frame', 'Σκελετός', 1, 5], ...Object.entries(PRODUCTS).filter(([k]) => KEY.includes(k) || k === pick).map(([k, p]) => [k, p.phase, p.win[0], p.win[1]])]
     .sort((a, b) => a[2] - b[2] || a[3] - b[3]);
-  const issued = new Date(base).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const issued = new Date(base).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Athens' });
 
   return (
     <div className="tt">

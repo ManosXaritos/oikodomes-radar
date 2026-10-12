@@ -45,7 +45,8 @@ function Check({ bad }) {
 export default async function Home() {
   const feed = await latestFeed(5);
   const base = new Date();
-  base.setDate(1);
+  base.setUTCDate(1);
+  base.setUTCHours(12, 0, 0, 0);
 
   return (
     <>

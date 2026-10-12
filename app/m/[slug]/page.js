@@ -87,7 +87,7 @@ export default async function PublicProfile({ params }) {
               {p.about && <p className={s.about}>{p.about}</p>}
               {(trades.length > 0 || p.tags.length > 0) && (
                 <div className="chips">
-                  {[...trades, ...p.tags].map((t) => <span key={t} className="chip">{t}</span>)}
+                  {[...new Set([...trades, ...p.tags])].map((t) => <span key={t} className="chip">{t}</span>)}
                 </div>
               )}
             </section>

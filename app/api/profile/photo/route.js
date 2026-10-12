@@ -4,9 +4,11 @@ import { randomUUID } from 'node:crypto';
 import { getSession } from '../../../../lib/session';
 import { adminClient } from '../../../../lib/supabase/admin';
 import { photoUrl } from '../../../../lib/profile';
+import { hasAccess } from '../../../../lib/plans';
 
 const TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const MAX = 4 * 1024 * 1024;
+const MAX_FILES = 40;
 
 // Check the file really is the image type it claims to be.
 function sniff(buf) {
@@ -17,8 +19,15 @@ function sniff(buf) {
 }
 
 export async function POST(request) {
-  const { user } = await getSession();
+  const { user, profile } = await getSession();
   if (!user) return NextResponse.json({ error: 'Συνδέσου πρώτα.' }, { status: 401 });
+  if (!hasAccess(profile)) return NextResponse.json({ error: 'Χρειάζεσαι ενεργή συνδρομή για να ανεβάσεις φωτογραφίες.' }, { status: 402 });
+  if (Number(request.headers.get('content-length') || 0) > MAX + 64 * 1024) return NextResponse.json({ error: 'Η φωτογραφία είναι πολύ μεγάλη (μέχρι 4 MB).' }, { status: 413 });
+  const db = adminClient();
+  const { data: bp } = await db.from('business_profiles').select('user_id').eq('user_id', user.id).maybeSingle();
+  if (!bp) return NextResponse.json({ error: 'Αποθήκευσε πρώτα τα στοιχεία του προφίλ σου.' }, { status: 400 });
+  const { data: existing } = await db.storage.from('work-photos').list(user.id, { limit: MAX_FILES + 1 });
+  if ((existing || []).length >= MAX_FILES) return NextResponse.json({ error: 'Έφτασες το όριο φωτογραφιών. Σβήσε κάποια δουλειά πρώτα.' }, { status: 400 });
   const form = await request.formData().catch(() => null);
   const file = form && form.get('file');
   if (!file || typeof file === 'string') return NextResponse.json({ error: 'Δεν στάλθηκε φωτογραφία.' }, { status: 400 });
@@ -28,7 +37,7 @@ export async function POST(request) {
   if (!type) return NextResponse.json({ error: 'Δεκτές μόνο φωτογραφίες JPG, PNG ή WEBP.' }, { status: 400 });
 
   const path = `${user.id}/${randomUUID()}.${TYPES[type]}`;
-  const { error } = await adminClient().storage.from('work-photos').upload(path, buf, { contentType: type, upsert: false });
+  const { error } = await db.storage.from('work-photos').upload(path, buf, { contentType: type, upsert: false });
   if (error) return NextResponse.json({ error: 'Δεν ανέβηκε η φωτογραφία. Δοκίμασε ξανά.' }, { status: 500 });
   return NextResponse.json({ ok: true, path, url: photoUrl(path) });
 }
