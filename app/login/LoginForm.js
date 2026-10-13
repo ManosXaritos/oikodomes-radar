@@ -22,6 +22,7 @@ export default function LoginForm({ next, startMode = 'signin' }) {
   const [mode, setMode] = useState(startMode); // signin | signup | forgot
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -99,7 +100,10 @@ export default function LoginForm({ next, startMode = 'signin' }) {
         {mode !== 'forgot' && (
           <div className="field">
             <label htmlFor="password">Κωδικός</label>
-            <input id="password" className="input" type="password" required minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'Τουλάχιστον 8 χαρακτήρες' : ''} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div className="pw">
+            <input id="password" className="input" type={showPw ? 'text' : 'password'} required minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'Τουλάχιστον 8 χαρακτήρες' : ''} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <button type="button" onClick={() => setShowPw((v) => !v)} aria-pressed={showPw}>{showPw ? 'Απόκρυψη' : 'Εμφάνιση'}</button>
+            </div>
           </div>
         )}
         {error && <div className="notice bad">{error}</div>}

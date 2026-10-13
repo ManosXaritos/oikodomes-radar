@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { TYPES, PRODUCTS, PRODUCT_GROUPS, phasesFor, fits, needWindow, stageOffsetMonths, scaledWin } from '../../lib/classify';
 import { municipalityName } from '../../lib/geo';
 import s from './dashboard.module.css';
+import useToast from '../components/useToast';
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false, loading: () => <div className={s.mapLoading}>Φορτώνει ο χάρτης…</div> });
 
@@ -21,7 +22,24 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
   const [types, setTypes] = useState(new Set());
   const [stages, setStages] = useState(new Set());
   const [view, setView] = useState('all'); // all | following
-  const [sel, setSel] = useState(focus);
+  const [sel, setSelRaw] = useState(focus);
+  const [q, setQ] = useState('');
+  const [toast, showToast] = useToast();
+  const [hideGuide, setHideGuide] = useState(true);
+  useEffect(() => {
+    try { setHideGuide(localStorage.getItem('radar-guide-done') === '1'); } catch { setHideGuide(false); }
+  }, []);
+  const closeGuide = () => {
+    setHideGuide(true);
+    try { localStorage.setItem('radar-guide-done', '1'); } catch {}
+  };
+  // On phones the details panel sits below the map, so bring it into view after a tap.
+  const setSel = (ada) => {
+    setSelRaw(ada);
+    if (typeof window !== 'undefined' && window.innerWidth < 1200) {
+      setTimeout(() => document.getElementById('dossier')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+  };
 
   useEffect(() => {
     let live = true;
@@ -44,11 +62,16 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
   const visible = useMemo(() => {
     let list = data.permits;
     if (view === 'following') list = list.filter((p) => data.leads[p.ada]);
+    const query = q.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (query) {
+      const n = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      list = list.filter((p) => n(p.title).includes(query) || n(municipalityName(p.municipality_code)).includes(query));
+    }
     if (types.size) list = list.filter((p) => types.has(p.type));
     if (stages.size) list = list.filter((p) => stages.has(p.stage));
     if (product !== 'all') list = [...list].sort((a, b) => fits(b, product) - fits(a, product) || new Date(b.published_at) - new Date(a.published_at));
     return list;
-  }, [data, view, types, stages, product]);
+  }, [data, view, types, stages, product, q]);
 
   useEffect(() => {
     if (load !== 'ready') return;
@@ -89,6 +112,8 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
     const next = { ...cur, ...patch };
     setData((d) => ({ ...d, leads: { ...d.leads, [ada]: next } }));
     const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(next) });
+    if (!res.ok) showToast('Δεν αποθηκεύτηκε. Δοκίμασε ξανά.', true);
+    else if (!data.leads[ada]) showToast('Προστέθηκε στα έργα μου');
     return res.ok;
   }
   async function unfollow(ada) {
@@ -98,12 +123,14 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
       return { ...d, leads };
     });
     await fetch('/api/leads', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ada }) });
+    showToast('Αφαιρέθηκε από τα έργα μου');
   }
 
   const current = data.permits.find((p) => p.ada === sel);
 
   return (
     <main className={s.page}>
+      {toast}
       {status === 'trialing' && trialEnd && (
         <div className="notice" style={{ marginBottom: 12 }}>
           Δωρεάν δοκιμή έως {dayLong(trialEnd)}. Πακέτο {plan}. <Link href="/app/settings">Ρυθμίσεις</Link>
@@ -115,6 +142,19 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
         </div>
       )}
 
+      {load === 'ready' && !hideGuide && Object.keys(data.leads).length === 0 && (
+        <section className={`card ${s.guide}`} aria-label="Πρώτα βήματα">
+          <div className={s.guideHead}>
+            <b>Ξεκίνα σε 3 βήματα</b>
+            <button type="button" className="navlink" onClick={closeGuide}>Κλείσιμο</button>
+          </div>
+          <ol>
+            <li><b>Διάλεξε τι πουλάς</b><span>Στο «Τι πουλάς;» αριστερά. Τα έργα που σου ταιριάζουν ανεβαίνουν πρώτα.</span></li>
+            <li><b>Άνοιξε μια άδεια</b><span>Βλέπεις πότε θα σε χρειαστεί το έργο και το επίσημο έγγραφο με τον μηχανικό.</span></li>
+            <li><b>Πάτα «+ Στα έργα μου»</b><span>Κρατάς σημειώσεις και βάζεις υπενθύμιση για να πάρεις τηλέφωνο την κατάλληλη στιγμή.</span></li>
+          </ol>
+        </section>
+      )}
       {load === 'ready' && (
         <h1 className={s.hello}>
           Βρήκαμε <span>{matches === null ? visible.length : matches} {(matches === null ? visible.length : matches) === 1 ? 'έργο' : 'έργα'}</span>
@@ -180,6 +220,9 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
               </div>
             </div>
           </div>
+          <div className={s.search}>
+            <input className="input" type="search" placeholder="Αναζήτηση δήμου ή έργου" aria-label="Αναζήτηση δήμου ή έργου" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
           <div className={s.list}>
             {load === 'loading' && <div className={s.empty}>Φορτώνουν οι άδειες…</div>}
             {load === 'error' && <div className={s.empty}>Δεν φορτώθηκαν οι άδειες. Ανανέωσε τη σελίδα σε λίγο.</div>}
@@ -222,7 +265,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
           {unmapped > 0 && load === 'ready' && <p className={s.mapnote}>{unmapped} άδειες δεν φαίνονται ακόμα στον χάρτη γιατί ο δήμος τους εντοπίζεται αύριο. Είναι όλες στη λίστα.</p>}
         </div>
 
-        <div className={`card ${s.dossierCol}`}>
+        <div id="dossier" className={`card ${s.dossierCol}`}>
           {current ? (
             <Dossier key={current.ada} p={current} product={product} picked={products} card={card} lead={data.leads[current.ada]} onSave={saveLead} onUnfollow={unfollow} />
           ) : (
@@ -271,7 +314,7 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
   return (
     <div className={s.dossier}>
       <div className={s.stamp}>
-        <span className={`pill ${p.stage}`}>{p.stage === 'ok' ? 'ΟΙΚΟΔΟΜΙΚΗ ΑΔΕΙΑ' : 'ΠΡΟΕΓΚΡΙΣΗ'}</span>
+        <span className={`pill ${p.stage}`}>{p.stage === 'ok' ? 'Οικοδομική άδεια' : 'Προέγκριση'}</span>
         <span className="num fine">ΑΔΑ {p.ada}</span>
       </div>
       <div>

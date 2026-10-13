@@ -35,7 +35,7 @@ t('only new projects become permits', () => {
   const pre = rows.find((r) => r.ada === '9ΘΝ046Ψ842-ΚΟΩ');
   assert.equal(pre.stage, 'pre');
   assert.equal(pre.municipality_code, '4611');
-  assert.equal(rows[1].title, 'ΝΕΑ ΔΙΩΡΟΦΗ ΟΙΚΟΔΟΜΗ (ΔΥΟ ΚΑΤΟΙΚΙΕΣ)');
+  assert.equal(rows[1].title, 'Νέα διώροφη οικοδομή (δύο κατοικίες)');
   assert.equal(rows[1].type, 'multi');
   assert.ok(rows[0].document_url.startsWith('https://diavgeia.gov.gr/doc/'));
 });

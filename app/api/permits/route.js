@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '../../../lib/session';
 import { adminClient } from '../../../lib/supabase/admin';
 import { hasAccess, allowedUnits, inArea } from '../../../lib/plans';
+import { niceTitle } from '../../../lib/titleCase';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +53,7 @@ export async function GET(request) {
   }
 
   return NextResponse.json({
-    permits: [...(permits || []), ...extra],
+    permits: [...(permits || []), ...extra].map((p) => ({ ...p, title: niceTitle(p.title) })),
     leads: leads || [],
     places: Object.fromEntries((places || []).map((p) => [p.code, [p.lat, p.lon]])),
   });

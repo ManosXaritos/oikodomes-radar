@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import s from './leads.module.css';
+import useToast from '../../components/useToast';
 
 const COLS = [
   ['new', 'Νέα', 'var(--accent)'],
@@ -19,6 +20,7 @@ export default function LeadsBoard({ initial }) {
   const [items, setItems] = useState(initial);
   const [open, setOpen] = useState(null);
   const [err, setErr] = useState('');
+  const [toast, showToast] = useToast();
 
   async function save(ada, patch) {
     const cur = items.find((i) => i.ada === ada);
@@ -30,10 +32,12 @@ export default function LeadsBoard({ initial }) {
       body: JSON.stringify({ ada, status: next.status, note: next.note, remind_on: next.remind_on, amount: next.amount }),
     });
     setErr(res.ok ? '' : 'Μια αλλαγή δεν αποθηκεύτηκε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.');
+    if (res.ok) showToast(patch.status && patch.status !== cur.status ? `Μετακινήθηκε: ${LABEL[patch.status]}` : 'Αποθηκεύτηκε');
   }
   async function remove(ada) {
     setItems((xs) => xs.filter((x) => x.ada !== ada));
     await fetch('/api/leads', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ada }) });
+    showToast('Αφαιρέθηκε από τα έργα μου');
   }
 
   const active = items.filter((i) => !['won', 'lost'].includes(i.status));
@@ -44,6 +48,7 @@ export default function LeadsBoard({ initial }) {
 
   return (
     <main className={s.page}>
+      {toast}
       <div className={s.head}>
         <div>
           <span className="eyebrow">Τα έργα μου</span>
@@ -60,7 +65,7 @@ export default function LeadsBoard({ initial }) {
 
       {due.length > 0 && (
         <div className={`card ${s.today}`}>
-          <span className={`mono ${s.todayTag}`}>ΣΗΜΕΡΑ</span>
+          <span className={s.todayTag}>Σήμερα</span>
           <div className={s.todayList}>
             {due.map((d) => (
               <button key={d.ada} type="button" onClick={() => setOpen(d.ada)}>

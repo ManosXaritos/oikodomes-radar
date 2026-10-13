@@ -60,7 +60,7 @@ export default async function Home() {
           <nav className="nav" aria-label="Κύριο μενού">
             <a className={`navlink ${s.hideSm}`} href="#giati">Γιατί</a>
             <a className={`navlink ${s.hideSm}`} href="#pos">Πώς δουλεύει</a>
-            <a className="navlink" href="#times">Τιμές</a>
+            <a className={`navlink ${s.hideXs}`} href="#times">Τιμές</a>
             <Link className="navlink" href="/login">Σύνδεση</Link>
             <Link className="btn primary" href="/login?plan=region">Δωρεάν δοκιμή</Link>
           </nav>
@@ -70,28 +70,33 @@ export default async function Home() {
           <div className={s.heroText}>
             <span className={s.live}>
               <i />
-              {feed.live ? `LIVE · ${feed.week} νέες άδειες αυτή την εβδομάδα` : 'LIVE · νέες άδειες κάθε πρωί από τη Διαύγεια'}
+              {feed.live ? `${feed.week} νέες άδειες αυτή την εβδομάδα` : 'Νέες άδειες κάθε πρωί από τη Διαύγεια'}
             </span>
             <h1 className={s.h1}>Κάθε νέα οικοδομή στην περιοχή σου. <span>Πριν από τον ανταγωνισμό.</span></h1>
             <p className={s.lead}>
               Διαβάζουμε κάθε πρωί τις νέες οικοδομικές άδειες της Διαύγειας και σου δείχνουμε όσες σε αφορούν, με το πότε ακριβώς θα χρειαστούν αυτό που πουλάς.
             </p>
             <div className={s.ctas}>
-              <Link className="btn primary big glow" href="/login?plan=region">Ξεκίνα δωρεάν 14 μέρες →</Link>
+              <Link className="btn primary big glow" href="/login?plan=region">Ξεκίνα δωρεάν 14 μέρες</Link>
               <a className="btn big" href="#times">Δες τις τιμές</a>
             </div>
-            <div className={s.trust}><span>Από €29/μήνα + ΦΠΑ</span><span>·</span><span>Χωρίς δέσμευση</span><span>·</span><span>Επίσημα δεδομένα Διαύγειας</span></div>
+            <ul className={s.trust}>
+              <li><Check />Από €29 τον μήνα + ΦΠΑ</li>
+              <li><Check />Ακυρώνεις όποτε θέλεις</li>
+              <li><Check />Επίσημα δεδομένα Διαύγειας</li>
+            </ul>
           </div>
           <div className={s.city}>
+            <div className={s.sweep} aria-hidden="true" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/iso-radar.svg" alt="Ισομετρική πόλη: οι νέες άδειες φαίνονται ως πράσινα κτίρια που δεν έχουν χτιστεί ακόμα" />
             <div className={s.tag1}>
-              <span className="mono">ΝΕΑ ΑΔΕΙΑ · 07:30</span>
+              <span>Νέα άδεια, 07:30</span>
               <b>Εξαόροφη πολυκατοικία</b>
               <span>Δήμος Αλίμου · κουφώματα σε 5–9 μήνες</span>
             </div>
             <div className={s.tag2}>
-              <span className="mono">ΠΡΟΕΓΚΡΙΣΗ</span>
+              <span>Προέγκριση</span>
               <b>Τετραόροφη · Βριλήσσια</b>
             </div>
           </div>
@@ -101,13 +106,13 @@ export default async function Home() {
       <section className={s.feedWrap}>
         <div className="wrap" style={{ paddingBlock: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className={s.feedHead}>
-            <span className="eyebrow">Μόλις βγήκαν · πραγματικές άδειες από τη Διαύγεια</span>
+            <span className="eyebrow">Μόλις βγήκαν: πραγματικές άδειες από τη Διαύγεια</span>
           </div>
           <div className={s.feed}>
             {feed.items.map((f, i) => (
               <div key={i} className={s.feedCard}>
                 <div className={s.feedTop}>
-                  <span className={`pill ${f.stage}`}>{f.stage === 'pre' ? 'ΠΡΟΕΓΚΡΙΣΗ' : 'ΑΔΕΙΑ'}</span>
+                  <span className={`pill ${f.stage}`}>{f.stage === 'pre' ? 'Προέγκριση' : 'Άδεια'}</span>
                   <span className="mono fine">{day(f.date)}</span>
                 </div>
                 <b>{f.title}</b>
@@ -201,7 +206,7 @@ export default async function Home() {
             <div className={s.ring} style={{ left: '50%', top: '50%', width: 900, height: 900, margin: '-450px 0 0 -450px' }} />
             <h2 className={s.h2} style={{ position: 'relative', maxWidth: 760, textAlign: 'center' }}>Η επόμενη πολυκατοικία στην περιοχή σου βγαίνει αύριο το πρωί.</h2>
             <p className="muted" style={{ position: 'relative', margin: 0, fontSize: 17 }}>Δες τις άδειες της περιοχής σου σε 2 λεπτά.</p>
-            <Link className="btn primary big glow" style={{ position: 'relative' }} href="/login?plan=region">Ξεκίνα δωρεάν 14 μέρες →</Link>
+            <Link className="btn primary big glow" style={{ position: 'relative' }} href="/login?plan=region">Ξεκίνα δωρεάν 14 μέρες</Link>
           </div>
         </section>
       </main>

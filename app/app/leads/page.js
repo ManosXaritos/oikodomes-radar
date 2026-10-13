@@ -5,6 +5,7 @@ import { hasAccess } from '../../../lib/plans';
 import { municipalityName } from '../../../lib/geo';
 import { TYPES } from '../../../lib/classify';
 import LeadsBoard from './LeadsBoard';
+import { niceTitle } from '../../../lib/titleCase';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Τα έργα μου · Radar' };
@@ -24,7 +25,7 @@ export default async function LeadsPage() {
     .filter((l) => byAda[l.ada])
     .map((l) => {
       const p = byAda[l.ada];
-      return { ...l, title: p.title, stage: p.stage, type: TYPES[p.type]?.short || '', place: municipalityName(p.municipality_code), published_at: p.published_at };
+      return { ...l, title: niceTitle(p.title), stage: p.stage, type: TYPES[p.type]?.short || '', place: municipalityName(p.municipality_code), published_at: p.published_at };
     });
   return <LeadsBoard initial={items} />;
 }

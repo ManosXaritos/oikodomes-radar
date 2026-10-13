@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PRODUCTS, PRODUCT_GROUPS } from '../../../lib/classify';
 import { slugify } from '../../../lib/profile';
 import s from './editor.module.css';
+import useToast from '../../components/useToast';
 
 const when = (d) => new Date(d).toLocaleString('el-GR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -37,6 +38,7 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
   const [msg, setMsg] = useState('');
   const [works, setWorks] = useState(initialWorks);
   const [copied, setCopied] = useState(false);
+  const [toast, showToast] = useToast();
   const set = (k) => (e) => {
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setP((x) => ({ ...x, [k]: v }));
@@ -62,18 +64,21 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
     setIsPublic(json.profile.published);
     setState('saved');
     setMsg(json.profile.published ? 'Αποθηκεύτηκε. Η σελίδα σου είναι δημόσια.' : 'Αποθηκεύτηκε. Η σελίδα δεν είναι ακόμα δημόσια.');
+    showToast(publish === true ? 'Η σελίδα σου δημοσιεύτηκε' : publish === false ? 'Η σελίδα σου κρύφτηκε' : 'Αποθηκεύτηκε');
   }
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      showToast('Το link αντιγράφηκε');
       setTimeout(() => setCopied(false), 2000);
     } catch {}
   }
 
   return (
     <main className={s.page}>
+      {toast}
       <div className={s.head}>
         <div>
           <span className="eyebrow">Το προφίλ μου</span>
