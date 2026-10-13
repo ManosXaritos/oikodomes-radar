@@ -93,7 +93,7 @@ span.chip { cursor: default; }
 
 /* Leaflet map in dark: invert the light OpenStreetMap tiles. */
 .leaflet-container { background: #0A0E0C !important; font-family: var(--f-ui), sans-serif !important; }
-.leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.5); }
+.leaflet-container .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.5); }
 .leaflet-bar a { background: var(--panel) !important; color: var(--ink) !important; border-color: var(--line) !important; }
 .leaflet-control-attribution { background: rgba(7,9,10,.75) !important; color: var(--muted2) !important; }
 .leaflet-control-attribution a { color: var(--muted) !important; }
