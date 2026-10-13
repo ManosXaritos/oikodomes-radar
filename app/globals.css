@@ -116,7 +116,7 @@ span.chip { cursor: default; }
 /* "What do you sell?" timeline (home page) */
 .tt { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
 .tt-left { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-.tt-h2 { margin: 0; font-family: var(--f-disp), sans-serif; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.08; font-weight: 800; letter-spacing: -1.2px; color: var(--white); }
+.tt-h2 { margin: 0; font-family: var(--f-disp), sans-serif; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; font-weight: 800; letter-spacing: -.8px; color: var(--white); }
 .tt-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid #16201C; }
 .tt-tabs button { border: 0; background: none; padding: 8px 10px; font-size: 13px; font-weight: 700; color: var(--muted2); border-bottom: 2px solid transparent; }
 .tt-tabs button[aria-selected="true"] { color: var(--white); border-bottom-color: var(--accent); }
@@ -140,3 +140,11 @@ span.chip { cursor: default; }
 .pw .input { padding-right: 76px; }
 .pw button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 700; padding: 6px 8px; border-radius: 8px; }
 .pw button:hover { color: var(--white); background: var(--soft); }
+
+/* App menu on phones: one swipeable row instead of two wrapped lines */
+@media (max-width: 760px) {
+  .bar .wrap { flex-wrap: nowrap; gap: 8px; }
+  .bar .nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; min-width: 0; }
+  .bar .nav::-webkit-scrollbar { display: none; }
+  .bar .navlink { white-space: nowrap; padding: 8px 10px; }
+}

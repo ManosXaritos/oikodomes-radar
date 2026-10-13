@@ -61,8 +61,8 @@ export default async function Home() {
             <a className={`navlink ${s.hideSm}`} href="#giati">Γιατί</a>
             <a className={`navlink ${s.hideSm}`} href="#pos">Πώς δουλεύει</a>
             <a className={`navlink ${s.hideXs}`} href="#times">Τιμές</a>
-            <Link className="navlink" href="/login">Σύνδεση</Link>
-            <Link className="btn primary" href="/login?plan=region">Δωρεάν δοκιμή</Link>
+            <Link className="btn" href="/login">Σύνδεση</Link>
+            <Link className={`btn primary ${s.hideXs}`} href="/login?plan=region">Δωρεάν δοκιμή</Link>
           </nav>
         </header>
 
