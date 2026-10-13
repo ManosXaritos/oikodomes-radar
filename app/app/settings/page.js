@@ -3,6 +3,7 @@ import { getSession } from '../../../lib/session';
 import SettingsForm from './SettingsForm';
 
 export const dynamic = 'force-dynamic';
+export const metadata = { title: 'Ρυθμίσεις · Radar' };
 
 export default async function SettingsPage({ searchParams }) {
   const { user, profile } = await getSession();

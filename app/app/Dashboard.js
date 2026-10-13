@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { TYPES, PRODUCTS, PRODUCT_GROUPS, phasesFor, fits, needWindow, stageOffsetMonths } from '../../lib/classify';
+import { TYPES, PRODUCTS, PRODUCT_GROUPS, phasesFor, fits, needWindow, stageOffsetMonths, scaledWin } from '../../lib/classify';
 import { municipalityName } from '../../lib/geo';
 import s from './dashboard.module.css';
 
@@ -288,7 +288,7 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
 
       <div className={s.sect}>Τι θα χρειαστεί και πότε</div>
       <div className={s.tl}>
-        {phases.map(([name, a, b, k]) => (
+        {phases.map(([name, a0, b0, k]) => [name, ...scaledWin(p, [a0, b0]), k]).map(([name, a, b, k]) => (
           <div key={name} className={`${s.tlRow}${k === product ? ` ${s.mine}` : ''}`}>
             <span>{name}</span>
             <div className={s.track}><div className={s.tlBar} style={{ left: `${(Math.min(a + off, maxM - 1) / maxM) * 100}%`, width: `${((Math.min(b + off, maxM) - Math.min(a + off, maxM - 1)) / maxM) * 100}%` }} /></div>

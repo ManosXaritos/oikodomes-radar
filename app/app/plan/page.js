@@ -5,6 +5,7 @@ import { hasAccess } from '../../../lib/plans';
 import PlanChooser from './PlanChooser';
 
 export const dynamic = 'force-dynamic';
+export const metadata = { title: 'Πακέτα · Radar' };
 
 export default async function PlanPage({ searchParams }) {
   const { user, profile } = await getSession();

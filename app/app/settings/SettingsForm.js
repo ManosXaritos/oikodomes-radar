@@ -43,8 +43,8 @@ export default function SettingsForm({ initial, welcome }) {
     setState('idle');
   };
   const toggleProduct = (k) => {
-    if (oneProduct) return set({ products: [k] });
-    set({ products: s.products.includes(k) ? s.products.filter((x) => x !== k) : [...s.products, k] });
+    setState('idle');
+    setS((x) => ({ ...x, products: oneProduct ? [k] : x.products.includes(k) ? x.products.filter((y) => y !== k) : [...x.products, k] }));
   };
 
   async function save(e) {

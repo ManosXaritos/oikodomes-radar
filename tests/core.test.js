@@ -1,7 +1,7 @@
 // Run with: node tests/core.test.js
 import assert from 'node:assert/strict';
 import { toPermit, fetchNewPermits, cleanTitle, stageOf } from '../lib/diavgeia.js';
-import { typeOf, hasPool, fits, needWindow } from '../lib/classify.js';
+import { typeOf, hasPool, fits, needWindow, scaledWin } from '../lib/classify.js';
 import { MUNICIPALITIES, UNITS, REGIONS, unitOf, regionOf, municipalityName } from '../lib/geo.js';
 import { sanitizeSettings, inArea, allowedUnits, needsSetup, hasAccess } from '../lib/plans.js';
 import { slugify, validSlug, cleanProfile, cleanWork } from '../lib/profile.js';
@@ -121,6 +121,12 @@ t('profile helpers', () => {
   assert.equal(p.since_year, null);
   assert.equal(p.published, false);
   assert.equal(cleanWork({ title: 'Χ', category: 'bad' }).category, '');
+});
+
+t('renovations are faster', () => {
+  assert.deepEqual(scaledWin({ type: 'multi' }, [6, 10]), [6, 10]);
+  assert.deepEqual(scaledWin({ type: 'reno' }, [6, 10]), [2, 4]);
+  assert.deepEqual(scaledWin({ type: 'reno' }, [0, 2]), [0, 1]);
 });
 
 console.log(`All ${n} checks passed.`);
