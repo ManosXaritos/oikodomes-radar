@@ -77,7 +77,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
     if (load !== 'ready') return;
     if (!sel || !visible.some((p) => p.ada === sel)) {
       const first = product === 'all' ? visible[0] : visible.find((p) => fits(p, product)) || visible[0];
-      setSel(first ? first.ada : null);
+      setSelRaw(first ? first.ada : null);
     }
   }, [visible, load, sel, product]);
 
