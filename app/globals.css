@@ -123,3 +123,4 @@ span.chip { cursor: default; }
 .tt-axis { font-size: 12px; color: #56635C; }
 .tt-axis div { display: flex; justify-content: space-between; }
 @media (max-width: 520px) { .tt-row { grid-template-columns: 100px minmax(0, 1fr); font-size: 13px; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
