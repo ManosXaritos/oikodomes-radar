@@ -1,6 +1,6 @@
 // Run with: node tests/core.test.js
 import assert from 'node:assert/strict';
-import { toPermit, fetchNewPermits, cleanTitle, stageOf } from '../lib/diavgeia.js';
+import { toPermit, fetchNewPermits, cleanTitle, stageOf, eventKind, toEvent } from '../lib/diavgeia.js';
 import { typeOf, hasPool, fits, needWindow, scaledWin } from '../lib/classify.js';
 import { MUNICIPALITIES, UNITS, REGIONS, unitOf, regionOf, municipalityName } from '../lib/geo.js';
 import { sanitizeSettings, inArea, allowedUnits, needsSetup, hasAccess } from '../lib/plans.js';
@@ -137,6 +137,18 @@ t('owner names, ΚΑΕΚ and ΑΦΜ are removed from titles; unit numbers stay',
   assert.equal(redactTitle('ΝΕΑ ΚΑΤΟΙΚΙΑ ΜΕ ΑΦΜ 123456789'), 'ΝΕΑ ΚΑΤΟΙΚΙΑ');
   assert.equal(redactTitle('Νέα κατοικία του κ. Παπαδόπουλου Γεωργίου στη Βάρη'), 'Νέα κατοικία στη Βάρη');
   for (const keep of ['ΑΠΟΠΕΡΑΤΩΣΗ ΟΡΙΖΟΝΤΙΑΣ ΙΔΙΟΚΤΗΣΙΑΣ Ι ΙΣΟΓΕΙΟΥ', 'ΑΠΟΠΕΡΑΤΩΣΗ ΙΔΙΟΚΤΗΣΙΑΣ B1 ΤΟΥ Β\' ΟΡΟΦΟΥ', 'ΑΛΛΑΓΗ ΙΔΙΟΚΤΗΤΩΝ ΚΑΙ ΜΗΧΑΝΙΚΩΝ', 'ΚΑΤΟΙΚΙΑ (ΚΑΘΕΤΗ ΙΔΙΟΚΤΗΣΙΑ ΙΙ)', 'Γνωμοδότηση του Κ.Α.Σ. στην συνεδρία']) assert.equal(redactTitle(keep), keep);
+});
+
+t('later acts are classified and point to their permit number', () => {
+  assert.equal(eventKind('Ενημέρωση Οικοδομικής Αδείας (ν.4759/2020): ΕΝΗΜΕΡΩΣΗ ΤΗΣ 889742/2023 ΟΙΚ. ΑΔΕΙΑΣ'), 'update');
+  assert.equal(eventKind('Αναθεώρηση Οικ. Αδείας ΧΩΡΙΣ μεταβολή κάλυψης/δόμησης/όγκου (ν.4759/2020): Β΄ ΑΝΑΘΕΩΡΗΣΗ'), 'revision');
+  assert.equal(eventKind('ΕΚΔΟΣΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΕΛΕΓΧΟΥ ΚΑΤΑΣΚΕΥΗΣ ΓΙΑ ΟΙΚΟΔΟΜΙΚΗ ΑΔΕΙΑ'), 'completion');
+  assert.equal(eventKind('ΠΟΡΙΣΜΑ - Α/Α 1547098'), 'inspection');
+  assert.equal(eventKind('ΑΠΟΦΑΣΗ ΑΝΑΚΛΗΣΗΣ ΟΙΚΟΔΟΜΙΚΗΣ ΑΔΕΙΑΣ'), 'revocation');
+  assert.equal(eventKind('Έγκριση Εργασιών Δόμησης Μικρής Κλίμακας: Εργασίες'), null);
+  assert.equal(eventKind('Οικοδομική Άδεια (ν.4759/2020): ΝΕΑ ΚΑΤΟΙΚΙΑ'), null);
+  const e = toEvent({ ada: 'X', subject: 'Ενημέρωση Οικοδομικής Αδείας (ν.4759/2020): ΕΝΗΜΕΡΩΣΗ ΤΗΣ ΥΠ΄ ΑΡ. 1037862/2024 ΟΙΚ. ΑΔΕΙΑΣ, ΚΑΕΚ 090143620008', protocolNumber: '2152978', publishTimestamp: 1791204628129 });
+  assert.deepEqual(e.refs, ['1037862']);
 });
 
 console.log(`All ${n} checks passed.`);
