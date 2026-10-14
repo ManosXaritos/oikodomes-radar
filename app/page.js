@@ -87,6 +87,7 @@ export default async function Home() {
             </ul>
           </div>
           <div className={s.city}>
+            <div className={s.ground} aria-hidden="true" />
             <div className={s.sweep} aria-hidden="true" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/iso-radar.svg" alt="Ισομετρική πόλη: οι νέες άδειες φαίνονται ως πράσινα κτίρια που δεν έχουν χτιστεί ακόμα" />
