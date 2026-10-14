@@ -491,7 +491,7 @@ function FindEngineer({ p }) {
   return (
     <form className={s.find} onSubmit={search}>
       <div className={s.sect}>📞 Βρες το τηλέφωνο του μηχανικού</div>
-      <span className="fine">1. Άνοιξε την άδεια και βρες τον <b>επιβλέποντα μηχανικό</b> (συνήθως στον πίνακα «Στοιχεία μηχανικών» ή «Επιβλέποντες»). 2. Γράψε το όνομά του εδώ:</span>
+      <span className="fine">1. Άνοιξε την άδεια και βρες τον <b>επιβλέποντα μηχανικό</b> (στον πίνακα με τους μηχανικούς του έργου, στην πρώτη σελίδα). 2. Γράψε το όνομά του εδώ:</span>
       <div className={s.findRow}>
         <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="π.χ. Παπαδόπουλος Γιώργος" aria-label="Όνομα μηχανικού" />
         <button className="btn primary" type="submit" disabled={!ok}>Βρες τηλέφωνο</button>
