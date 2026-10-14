@@ -15,5 +15,13 @@ export async function GET(request, { params }) {
   const { data: permit } = await db.from('permits').select('ada,municipality_code').eq('ada', ada).eq('hidden', false).maybeSingle();
   if (!permit || !inArea(profile, permit.municipality_code)) return NextResponse.json({ events: [] });
   const { data } = await db.from('permit_events').select('ada,kind,title,published_at,document_url').eq('permit_ada', ada).order('published_at', { ascending: false }).limit(30);
-  return NextResponse.json({ events: data || [] });
+  // The same act is sometimes posted twice on Diavgeia; show it once.
+  const seen = new Set();
+  const events = (data || []).filter((e) => {
+    const k = `${e.kind}|${e.title}|${String(e.published_at).slice(0, 10)}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  return NextResponse.json({ events });
 }
