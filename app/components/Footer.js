@@ -16,6 +16,7 @@ export default function Footer() {
             <Link href="/#times">Τιμές</Link>
             <Link href="/login?plan=region">Δωρεάν δοκιμή</Link>
             <Link href="/login">Σύνδεση</Link>
+            <Link href="/michanikos">Είσαι μηχανικός;</Link>
           </div>
           <div>
             <b>Εταιρεία</b>

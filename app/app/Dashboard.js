@@ -476,26 +476,96 @@ function History({ p }) {
   );
 }
 
-// Helps the customer reach the engineer: they read the name in the permit and we open a search.
-// Nothing from the document is read or stored by us.
+// Helps the customer reach the engineer.
+// 1) Engineers who signed up themselves (and the one who declared this project) are shown with a call button.
+// 2) Otherwise the customer pastes the name from the permit and we look up that office's public
+//    business listing. We never read the document and we store neither the name nor the results.
 function FindEngineer({ p }) {
   const [name, setName] = useState('');
-  const place = municipalityName(p.municipality_code).replace(/^Δήμος\s+/, '');
-  const ok = name.trim().length > 2;
-  function search(e) {
-    e.preventDefault();
-    if (!ok) return;
-    const q = `${name.trim()} μηχανικός ${place} τηλέφωνο`;
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank', 'noopener');
+  const [state, setState] = useState('idle'); // idle | busy | done
+  const [found, setFound] = useState(null);
+  const [contacts, setContacts] = useState({ project: [], area: [] });
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/permits/${encodeURIComponent(p.ada)}/contacts`).then((r) => (r.ok ? r.json() : null)).then((j) => alive && j && setContacts(j)).catch(() => {});
+    return () => { alive = false; };
+  }, [p.ada]);
+
+  async function lookup(value) {
+    const v = String(value || '').replace(/\s+/g, ' ').trim();
+    if (v.length < 3) return;
+    setState('busy');
+    const res = await fetch('/api/engineer-lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: v, ada: p.ada }) });
+    const j = await res.json().catch(() => ({}));
+    setFound(j);
+    setState('done');
   }
+
+  const tel = (x) => `tel:${String(x).replace(/[^\d+]/g, '')}`;
   return (
-    <form className={s.find} onSubmit={search}>
-      <div className={s.sect}>📞 Βρες το τηλέφωνο του μηχανικού</div>
-      <span className="fine">1. Άνοιξε την άδεια και βρες τον <b>επιβλέποντα μηχανικό</b> (στον πίνακα με τους μηχανικούς του έργου, στην πρώτη σελίδα). 2. Γράψε το όνομά του εδώ:</span>
-      <div className={s.findRow}>
-        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="π.χ. Παπαδόπουλος Γιώργος" aria-label="Όνομα μηχανικού" />
-        <button className="btn primary" type="submit" disabled={!ok}>Βρες τηλέφωνο</button>
-      </div>
-    </form>
+    <div className={s.find}>
+      <div className={s.sect}>📞 Τηλέφωνο μηχανικού</div>
+
+      {contacts.project.map((e) => (
+        <div key={e.id} className={s.contact}>
+          <div><span className={s.real}>Ο μηχανικός του έργου</span></div>
+          <b>{e.name}</b>
+          <span className="fine">{[e.specialty, e.office].filter(Boolean).join(' · ')}{e.note ? ` · ${e.note}` : ''}</span>
+          <div className={s.findRow}>
+            <a className="btn primary" href={tel(e.phone)}>📞 {e.phone}</a>
+            {e.email && <a className="btn" href={`mailto:${e.email}`}>Email</a>}
+          </div>
+        </div>
+      ))}
+
+      <span className="fine">Άνοιξε την άδεια, βρες τον <b>επιβλέποντα μηχανικό</b> (στον πίνακα με τους μηχανικούς, στην πρώτη σελίδα), αντίγραψε το όνομα και <b>επικόλλησέ το εδώ</b>. Το τηλέφωνο του γραφείου του εμφανίζεται αμέσως.</span>
+      <form className={s.findRow} onSubmit={(e) => { e.preventDefault(); lookup(name); }}>
+        <input
+          className="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onPaste={(e) => { const t = e.clipboardData.getData('text'); setTimeout(() => lookup(t), 0); }}
+          placeholder="Επικόλλησε το όνομα του μηχανικού"
+          aria-label="Όνομα μηχανικού"
+        />
+        <button className="btn primary" type="submit" disabled={name.trim().length < 3 || state === 'busy'}>{state === 'busy' ? 'Ψάχνω…' : 'Βρες τηλέφωνο'}</button>
+      </form>
+
+      {state === 'done' && found && (
+        <div className={s.results}>
+          {(found.results || []).map((r) => (
+            <div key={r.id} className={s.contact}>
+              <b>{r.name}</b>
+              <span className="fine">{[r.type, r.address].filter(Boolean).join(' · ')}</span>
+              <div className={s.findRow}>
+                <a className="btn primary" href={tel(r.phone)}>📞 {r.phone}</a>
+                {r.maps && <a className="btn" href={r.maps} target="_blank" rel="noopener noreferrer">Στον χάρτη</a>}
+              </div>
+            </div>
+          ))}
+          {(found.results || []).length > 0 && <span className={s.gattr} translate="no">Google Maps</span>}
+          {(found.results || []).length > 0 && <span className="fine">Βεβαιώσου ότι είναι το ίδιο πρόσωπο με την άδεια πριν καλέσεις.</span>}
+          {!(found.results || []).length && (
+            <span className="fine">
+              {found.reason === 'limit' ? 'Έφτασες το όριο αναζητήσεων για σήμερα. ' : found.reason === 'nokey' ? '' : 'Δεν βρέθηκε καταχώριση με τηλέφωνο. '}
+              {found.fallback && <a href={found.fallback} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Ψάξε στο Google ↗</a>}
+            </span>
+          )}
+        </div>
+      )}
+
+      {contacts.area.length > 0 && (
+        <details className={s.areaEng}>
+          <summary>Μηχανικοί της περιοχής που δέχονται προμηθευτές ({contacts.area.length})</summary>
+          {contacts.area.map((e) => (
+            <div key={e.id} className={s.contact}>
+              <b>{e.name}</b>
+              <span className="fine">{[e.specialty, e.office].filter(Boolean).join(' · ')}</span>
+              <a className="btn small" href={tel(e.phone)} style={{ alignSelf: 'flex-start' }}>📞 {e.phone}</a>
+            </div>
+          ))}
+        </details>
+      )}
+    </div>
   );
 }
