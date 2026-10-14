@@ -243,6 +243,7 @@ export default function Dashboard({ plan, products, status, trialEnd, focus, car
                         {municipalityName(p.municipality_code)} · {TYPES[p.type]?.short}{p.pool ? ' · πισίνα' : ''}
                         {lead ? ` · ${LEAD_STATUS[lead.status]}` : ''}
                       </span>
+                      {progressOf(p) && <span className={`${s.prog} ${s['prog_' + progressOf(p).tone]}`}>{progressOf(p).short}</span>}
                     </span>
                     <span className={s.rd}><b>{dayShort(p.published_at)}</b>{p.stage === 'pre' ? 'προέγκρ.' : 'άδεια'}</span>
                   </button>
@@ -293,6 +294,7 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
   const [saved, setSaved] = useState('');
   const off = stageOffsetMonths(p.stage);
   const maxM = 18;
+  const today = Math.max(0, (Date.now() - new Date(p.issued_at).getTime()) / (30.44 * 864e5));
   const phases = phasesFor(p, product === 'all' ? picked : [...picked, product]);
   let next = null;
   if (product !== 'all') {
@@ -325,21 +327,25 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
         <Fact k="Τύπος έργου" v={TYPES[p.type]?.label} />
         <Fact k="Μέγεθος ευκαιρίας" v={TYPES[p.type]?.size} />
         <Fact k="Πισίνα" v={p.pool ? 'Ναι' : 'Όχι'} />
-        <Fact k="Στάδιο" v={p.stage === 'ok' ? 'Ξεκινά τώρα' : 'Σε ~3 μήνες'} />
+        <Fact k="Πρόοδος" v={progressOf(p)?.long || 'Χωρίς νεότερη πράξη'} />
       </div>
       {next}
 
-      <div className={s.sect}>Τι θα χρειαστεί και πότε</div>
+      <History p={p} />
+
+      <div className={s.sect}>Τι θα χρειαστεί και πότε <span className={s.est}>Εκτίμηση</span></div>
       <div className={s.tl}>
         {phases.map(([name, a0, b0, k]) => [name, ...scaledWin(p, [a0, b0]), k]).map(([name, a, b, k]) => (
           <div key={name} className={`${s.tlRow}${k === product ? ` ${s.mine}` : ''}`}>
             <span>{name}</span>
-            <div className={s.track}><div className={s.tlBar} style={{ left: `${(Math.min(a + off, maxM - 1) / maxM) * 100}%`, width: `${((Math.min(b + off, maxM) - Math.min(a + off, maxM - 1)) / maxM) * 100}%` }} /></div>
+            <div className={s.track}>{today <= maxM && <i className={s.today} style={{ left: `${(today / maxM) * 100}%` }} />}<div className={s.tlBar} style={{ left: `${(Math.min(a + off, maxM - 1) / maxM) * 100}%`, width: `${((Math.min(b + off, maxM) - Math.min(a + off, maxM - 1)) / maxM) * 100}%` }} /></div>
           </div>
         ))}
-        <div className={s.axis}><span /><div><span>τώρα</span><span>6 μήνες</span><span>12</span><span>18</span></div></div>
+        <div className={s.axis}><span /><div><span>άδεια</span><span>6 μήνες</span><span>12</span><span>18</span></div></div>
       </div>
-      <p className="fine" style={{ margin: 0 }}>Τυπικοί χρόνοι για ελληνική οικοδομή, ενδεικτικά.</p>
+      <p className="fine" style={{ margin: 0 }}>
+        <i className={s.todayKey} /> σήμερα{today > maxM ? ` (${Math.round(today)} μήνες από την άδεια)` : ''}. Οι μπάρες είναι τυπικοί χρόνοι για ελληνική οικοδομή, όχι η πραγματική πορεία του έργου. Πραγματικά στοιχεία είναι μόνο οι πράξεις στο «Ιστορικό στη Διαύγεια».
+      </p>
 
       <div className={s.actions}>
         <a className="btn primary" href={p.document_url} target="_blank" rel="noopener noreferrer">Άνοιξε την άδεια στη Διαύγεια ↗</a>
@@ -416,6 +422,55 @@ function ShareCard({ p, card }) {
         <button type="button" className="btn small primary" onClick={copy}>{copied ? '✓ Αντιγράφηκε' : 'Αντιγραφή μηνύματος'}</button>
         <a className="btn small" href={`mailto:?subject=${encodeURIComponent(`Για το έργο: ${p.title}`)}&body=${encodeURIComponent(text)}`}>Email</a>
       </div>
+    </div>
+  );
+}
+
+const EVENT_LABEL = {
+  update: 'Ενημέρωση άδειας',
+  revision: 'Αναθεώρηση άδειας',
+  inspection: 'Έλεγχος από ελεγκτή δόμησης',
+  completion: 'Πιστοποιητικό ελέγχου κατασκευής',
+  revocation: 'Ανάκληση άδειας',
+};
+
+// Real status, from later acts on Diavgeia. Null when nothing has been published since the permit.
+function progressOf(p) {
+  if (!p || !p.events_count) return null;
+  const when = p.last_event_at ? new Date(p.last_event_at).toLocaleDateString('el-GR', { month: 'short', year: 'numeric' }) : '';
+  if (p.progress === 'revoked') return { tone: 'bad', short: 'Ανακλήθηκε', long: 'Η άδεια ανακλήθηκε' };
+  if (p.progress === 'done') return { tone: 'done', short: 'Στο τέλος', long: `Πήρε πιστοποιητικό ελέγχου (${when}): το έργο τελειώνει` };
+  return { tone: 'live', short: `Κινείται · ${when}`, long: `Ενεργό: ${EVENT_LABEL[p.last_event_kind]?.toLowerCase() || 'νέα πράξη'} ${when}` };
+}
+
+function History({ p }) {
+  const [events, setEvents] = useState(null);
+  useEffect(() => {
+    if (!p.events_count) { setEvents([]); return undefined; }
+    let alive = true;
+    fetch(`/api/permits/${encodeURIComponent(p.ada)}/events`)
+      .then((r) => (r.ok ? r.json() : { events: [] }))
+      .then((j) => alive && setEvents(j.events || []))
+      .catch(() => alive && setEvents([]));
+    return () => { alive = false; };
+  }, [p.ada, p.events_count]);
+  return (
+    <div className={s.hist}>
+      <div className={s.sect}>Ιστορικό στη Διαύγεια <span className={s.real}>Πραγματικό</span></div>
+      {events === null && <span className="fine">Φόρτωση…</span>}
+      {events && events.length === 0 && (
+        <span className="fine">Δεν έχει δημοσιευτεί άλλη πράξη για αυτή την άδεια μετά την έκδοσή της. Όταν βγει ενημέρωση, έλεγχος ή πιστοποιητικό, θα εμφανιστεί εδώ.</span>
+      )}
+      {events && events.map((e) => (
+        <a key={e.ada} className={s.ev} href={e.document_url} target="_blank" rel="noopener noreferrer">
+          <span className={`${s.evDot} ${s['ev_' + e.kind]}`} />
+          <span style={{ minWidth: 0 }}>
+            <b>{EVENT_LABEL[e.kind] || 'Πράξη'}</b> <span className="mono fine">{new Date(e.published_at).toLocaleDateString('el-GR')}</span>
+            {e.title && <span className={s.evT}>{e.title}</span>}
+          </span>
+          <span className="fine">↗</span>
+        </a>
+      ))}
     </div>
   );
 }

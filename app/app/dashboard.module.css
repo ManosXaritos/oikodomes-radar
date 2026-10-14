@@ -58,6 +58,27 @@
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .lead { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
 
+/* Real progress from later Diavgeia acts */
+.prog { display: inline-block; margin-top: 3px; font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid; }
+.prog_live { color: var(--accent); border-color: rgba(61, 255, 160, .35); background: rgba(61, 255, 160, .08); }
+.prog_done { color: #9DB8FF; border-color: rgba(157, 184, 255, .35); background: rgba(157, 184, 255, .08); }
+.prog_bad { color: #FF8A7A; border-color: rgba(255, 122, 107, .35); background: rgba(255, 122, 107, .08); }
+.est, .real { margin-left: 6px; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; vertical-align: 2px; }
+.est { color: #FFC266; border: 1px dashed rgba(255, 194, 102, .5); }
+.real { color: var(--accent); border: 1px solid rgba(61, 255, 160, .4); }
+.hist { display: flex; flex-direction: column; gap: 8px; }
+.ev { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); text-decoration: none; color: var(--ink); font-size: 13.5px; }
+.ev:hover { border-color: var(--line2); background: var(--soft); }
+.ev b { color: var(--white); }
+.evT { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.35; margin-top: 2px; overflow-wrap: anywhere; }
+.evDot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; background: var(--muted2); }
+.ev_update, .ev_revision { background: var(--accent); }
+.ev_inspection { background: #FFC266; }
+.ev_completion { background: #9DB8FF; }
+.ev_revocation { background: #FF8A7A; }
+.today { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--white); opacity: .7; z-index: 1; border-radius: 1px; }
+.todayKey { display: inline-block; width: 2px; height: 11px; background: var(--white); opacity: .7; vertical-align: -1px; margin-right: 4px; }
+
 @media (max-width: 1200px) {
   .main { grid-template-columns: 300px minmax(0, 1fr); }
   .dossierCol { grid-column: 1 / -1; }
