@@ -38,7 +38,7 @@ t('only new projects become permits', () => {
   assert.equal(pre.municipality_code, '4611');
   assert.equal(rows[1].title, 'Νέα διώροφη οικοδομή (δύο κατοικίες)');
   assert.equal(rows[1].type, 'multi');
-  assert.ok(rows[0].document_url.startsWith('https://diavgeia.gov.gr/doc/'));
+  assert.ok(rows[0].document_url.startsWith('https://diavgeia.gov.gr/decision/view/'));
 });
 
 t('title cleaning keeps mixed-case titles', () => {

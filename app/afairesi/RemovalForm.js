@@ -24,7 +24,7 @@ export default function RemovalForm() {
   if (state === 'sent') return <div className="notice good" role="status">{msg}</div>;
   return (
     <form onSubmit={submit} className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div className="field"><label htmlFor="r-ada">ΑΔΑ ή link της πράξης στη Διαύγεια</label><input id="r-ada" className="input" required value={f.ada} onChange={set('ada')} placeholder="π.χ. ΨΑ1Β46ΜΤΛΡ-7ΘΔ ή https://diavgeia.gov.gr/doc/…" /></div>
+      <div className="field"><label htmlFor="r-ada">ΑΔΑ ή link της πράξης στη Διαύγεια</label><input id="r-ada" className="input" required value={f.ada} onChange={set('ada')} placeholder="π.χ. ΨΑ1Β46ΜΤΛΡ-7ΘΔ ή https://diavgeia.gov.gr/decision/view/…" /></div>
       <div className="field"><label htmlFor="r-name">Ονοματεπώνυμο</label><input id="r-name" className="input" required value={f.name} onChange={set('name')} autoComplete="name" /></div>
       <div className="field"><label htmlFor="r-email">Email για απάντηση</label><input id="r-email" className="input" type="email" required value={f.email} onChange={set('email')} autoComplete="email" /></div>
       <div className="field"><label htmlFor="r-reason">Σχέση με το έργο / λόγος (προαιρετικό)</label><textarea id="r-reason" className="input" rows={3} value={f.reason} onChange={set('reason')} placeholder="π.χ. Είμαι ο ιδιοκτήτης του ακινήτου" /></div>
