@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { TYPES, PRODUCTS, PRODUCT_GROUPS, phasesFor, fits, needWindow, stageOffsetMonths, scaledWin } from '../../lib/classify';
 import { municipalityName } from '../../lib/geo';
@@ -292,6 +293,7 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
   const [note, setNote] = useState(lead?.note || '');
   const [remind, setRemind] = useState(lead?.remind_on || '');
   const [saved, setSaved] = useState('');
+  const [doc, setDoc] = useState(false);
   const off = stageOffsetMonths(p.stage);
   const maxM = 18;
   const today = Math.max(0, (Date.now() - new Date(p.issued_at).getTime()) / (30.44 * 864e5));
@@ -348,13 +350,14 @@ function Dossier({ p, product, picked, card, lead, onSave, onUnfollow }) {
       </p>
 
       <div className={s.actions}>
-        <a className="btn primary" href={p.document_url} target="_blank" rel="noopener noreferrer">Άνοιξε την άδεια στη Διαύγεια ↗</a>
+        <button type="button" className="btn primary" onClick={() => setDoc(true)}>Δες την άδεια εδώ</button>
         {lead ? (
           <button type="button" className="btn" onClick={() => onUnfollow(p.ada)}>✓ Στα έργα μου · αφαίρεση</button>
         ) : (
           <button type="button" className="btn ghost" onClick={() => onSave(p.ada, { status: 'new' })}>+ Στα έργα μου</button>
         )}
       </div>
+      {doc && <DocViewer p={p} onClose={() => setDoc(false)} />}
       <ShareCard p={p} card={card} />
       <p className="fine" style={{ margin: 0 }}>
         Στο έγγραφο της άδειας θα βρεις τη διεύθυνση του έργου και τον μηχανικό. Μίλα με τον μηχανικό ή επισκέψου το εργοτάξιο. Μην καλείς ιδιοκτήτες ιδιώτες.
@@ -472,5 +475,47 @@ function History({ p }) {
         </a>
       ))}
     </div>
+  );
+}
+
+// The permit PDF inside our site, with a helper to look up the engineer's office.
+// We don't read or store anything from the document: the customer types the name themselves.
+function DocViewer({ p, onClose }) {
+  const [name, setName] = useState('');
+  const pdf = `https://diavgeia.gov.gr/doc/${encodeURIComponent(p.ada)}?inline=true`;
+  const place = municipalityName(p.municipality_code).replace(/^Δήμος\s+/, '');
+  const search = () => {
+    const q = `${name.trim()} μηχανικός ${place} τηλέφωνο`;
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank', 'noopener');
+  };
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [onClose]);
+  return createPortal(
+    <div className={s.docWrap} role="dialog" aria-modal="true" aria-label="Η άδεια">
+      <div className={s.docBox}>
+        <div className={s.docHead}>
+          <b className="disp">Άδεια · ΑΔΑ {p.ada}</b>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <a className="btn small" href={pdf} target="_blank" rel="noopener noreferrer">Σε νέα καρτέλα ↗</a>
+            <a className="btn small" href={p.document_url} target="_blank" rel="noopener noreferrer">Σελίδα στη Διαύγεια ↗</a>
+            <button type="button" className="btn small" onClick={onClose} aria-label="Κλείσιμο">✕</button>
+          </div>
+        </div>
+        <form className={s.docFind} onSubmit={(e) => { e.preventDefault(); if (name.trim().length > 2) search(); }}>
+          <span className="fine">Βρες στο έγγραφο τον <b>επιβλέποντα μηχανικό</b> και γράψε το όνομά του:</span>
+          <div className={s.docRow}>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="π.χ. Παπαδόπουλος Γιώργος" aria-label="Όνομα μηχανικού" />
+            <button className="btn primary" type="submit" disabled={name.trim().length < 3}>📞 Βρες τηλέφωνο</button>
+          </div>
+        </form>
+        <iframe className={s.docFrame} src={pdf} title={`Άδεια ${p.ada}`} />
+        <p className={`fine ${s.docMobile}`}>Αν δεν φαίνεται το έγγραφο στο κινητό, πάτα «Σε νέα καρτέλα».</p>
+      </div>
+    </div>,
+    document.body,
   );
 }
