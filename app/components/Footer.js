@@ -21,13 +21,14 @@ export default function Footer() {
             <b>Εταιρεία</b>
             <Link href="/oroi">Όροι χρήσης</Link>
             <Link href="/aporrito">Απόρρητο</Link>
+            <Link href="/afairesi">Αφαίρεση στοιχείων</Link>
             {mail && <a href={`mailto:${mail}`}>Επικοινωνία</a>}
           </div>
         </nav>
       </div>
       <div className="wrap footer-bottom">
         <span>© {new Date().getFullYear()} Νέες Οικοδομές Radar</span>
-        <span>Δεδομένα από τη Διαύγεια (diavgeia.gov.gr)</span>
+        <span>Πηγή αδειών: <a href="https://diavgeia.gov.gr" target="_blank" rel="noopener">Διαύγεια</a>. Δεν είμαστε δημόσια υπηρεσία· επίσημο είναι μόνο το έγγραφο της Διαύγειας.</span>
       </div>
     </footer>
   );

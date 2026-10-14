@@ -144,6 +144,7 @@ export default function ProfileEditor({ initial, saved, active, site, works: ini
               <button className="btn primary" type="button" disabled={state === 'saving'} onClick={(e) => save(e, true)}>Αποθήκευση και δημοσίευση</button>
             )}
           </div>
+          <span className="fine">Με τη δημοσίευση, όσα γράφεις εδώ και οι φωτογραφίες σου γίνονται ορατά σε όλους. Ανέβαζε μόνο φωτογραφίες που σου ανήκουν, χωρίς αναγνωρίσιμα πρόσωπα ή διευθύνσεις πελατών (<Link href="/oroi">Όροι, §6</Link>).</span>
         </form>
 
         <div className={s.side}>

@@ -18,7 +18,7 @@ export default async function LeadsPage() {
   const { data: leads } = await db.from('saved_leads').select('ada,status,note,remind_on,amount,updated_at').eq('user_id', user.id).order('updated_at', { ascending: false });
   const adas = (leads || []).map((l) => l.ada);
   const { data: permits } = adas.length
-    ? await db.from('permits').select('ada,title,stage,type,municipality_code,published_at').in('ada', adas)
+    ? await db.from('permits').select('ada,title,stage,type,municipality_code,published_at').eq('hidden', false).in('ada', adas)
     : { data: [] };
   const byAda = Object.fromEntries((permits || []).map((p) => [p.ada, p]));
   const items = (leads || [])

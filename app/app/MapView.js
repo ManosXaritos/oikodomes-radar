@@ -20,9 +20,9 @@ export default function MapView({ points, selected, onSelect }) {
       L.current = leaflet;
       map.current = leaflet.map(box.current, { zoomControl: true, attributionControl: true }).setView([38.3, 23.8], 6);
       leaflet
-        .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        .tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 18,
-          attribution: '&copy; συντελεστές OpenStreetMap',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">συντελεστές OpenStreetMap</a>',
         })
         .addTo(map.current);
       layer.current = leaflet.layerGroup().addTo(map.current);

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '../../lib/supabase/client';
 
 const GoogleIcon = () => (
@@ -113,6 +114,7 @@ export default function LoginForm({ next, startMode = 'signin' }) {
         </button>
         {mode === 'signin' && <button type="button" className="navlink" style={{ alignSelf: 'center' }} onClick={() => { setMode('forgot'); setError(''); }}>Ξέχασες τον κωδικό;</button>}
         {mode === 'forgot' && <button type="button" className="navlink" style={{ alignSelf: 'center' }} onClick={() => { setMode('signin'); setInfo(''); }}>← Πίσω στη σύνδεση</button>}
+        {mode !== 'forgot' && <span className="fine" style={{ textAlign: 'center' }}>Συνεχίζοντας αποδέχεσαι τους <Link href="/oroi" style={{ color: "var(--accent)" }}>Όρους χρήσης</Link> και την <Link href="/aporrito" style={{ color: "var(--accent)" }}>Πολιτική απορρήτου</Link>.</span>}
       </form>
       <span className="sr-only" aria-live="polite">{title}</span>
     </div>

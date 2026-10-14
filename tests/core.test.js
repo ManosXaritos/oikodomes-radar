@@ -5,6 +5,7 @@ import { typeOf, hasPool, fits, needWindow, scaledWin } from '../lib/classify.js
 import { MUNICIPALITIES, UNITS, REGIONS, unitOf, regionOf, municipalityName } from '../lib/geo.js';
 import { sanitizeSettings, inArea, allowedUnits, needsSetup, hasAccess } from '../lib/plans.js';
 import { slugify, validSlug, cleanProfile, cleanWork } from '../lib/profile.js';
+import { redactTitle } from '../lib/redact.js';
 
 let n = 0;
 const t = (name, fn) => {
@@ -127,6 +128,15 @@ t('renovations are faster', () => {
   assert.deepEqual(scaledWin({ type: 'multi' }, [6, 10]), [6, 10]);
   assert.deepEqual(scaledWin({ type: 'reno' }, [6, 10]), [2, 4]);
   assert.deepEqual(scaledWin({ type: 'reno' }, [0, 2]), [0, 1]);
+});
+
+t('owner names, ΚΑΕΚ and ΑΦΜ are removed from titles; unit numbers stay', () => {
+  assert.equal(redactTitle('ΚΑΤΟΙΚΙΑ ΣΤΟΝ ΑΓΙΟ ΜΑΜΑ, ΙΔΙΟΚΤΗΣΙΑΣ ΒΑΧΛΑ ΚΩΝΣΤΑΝΤΙΝΟΥ.'), 'ΚΑΤΟΙΚΙΑ ΣΤΟΝ ΑΓΙΟ ΜΑΜΑ');
+  assert.equal(redactTitle('σε κατοικία, καθέτου ιδιοκτησίας 2 - ισόγειο, ιδιοκτησίας Χαρβαλάκου Μαρία του Σαράντου'), 'σε κατοικία, καθέτου ιδιοκτησίας 2 - ισόγειο');
+  assert.equal(redactTitle('Περίφραξη σε οικόπεδο με ΚΑΕΚ 202850404001/0/0'), 'Περίφραξη σε οικόπεδο');
+  assert.equal(redactTitle('ΝΕΑ ΚΑΤΟΙΚΙΑ ΜΕ ΑΦΜ 123456789'), 'ΝΕΑ ΚΑΤΟΙΚΙΑ');
+  assert.equal(redactTitle('Νέα κατοικία του κ. Παπαδόπουλου Γεωργίου στη Βάρη'), 'Νέα κατοικία στη Βάρη');
+  for (const keep of ['ΑΠΟΠΕΡΑΤΩΣΗ ΟΡΙΖΟΝΤΙΑΣ ΙΔΙΟΚΤΗΣΙΑΣ Ι ΙΣΟΓΕΙΟΥ', 'ΑΠΟΠΕΡΑΤΩΣΗ ΙΔΙΟΚΤΗΣΙΑΣ B1 ΤΟΥ Β\' ΟΡΟΦΟΥ', 'ΑΛΛΑΓΗ ΙΔΙΟΚΤΗΤΩΝ ΚΑΙ ΜΗΧΑΝΙΚΩΝ', 'ΚΑΤΟΙΚΙΑ (ΚΑΘΕΤΗ ΙΔΙΟΚΤΗΣΙΑ ΙΙ)', 'Γνωμοδότηση του Κ.Α.Σ. στην συνεδρία']) assert.equal(redactTitle(keep), keep);
 });
 
 console.log(`All ${n} checks passed.`);

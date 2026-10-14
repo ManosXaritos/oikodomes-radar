@@ -26,6 +26,7 @@ export async function GET(request) {
     let q = db
       .from('permits')
       .select('ada,title,stage,type,pool,municipality_code,unit_code,issued_at,published_at,document_url')
+      .eq('hidden', false)
       .gte('published_at', since)
       .order('published_at', { ascending: false })
       .range(from, from + 999);
@@ -48,7 +49,7 @@ export async function GET(request) {
   const missing = (leads || []).map((l) => l.ada).filter((a) => !have.has(a));
   let extra = [];
   if (missing.length) {
-    const { data } = await db.from('permits').select('ada,title,stage,type,pool,municipality_code,unit_code,issued_at,published_at,document_url').in('ada', missing);
+    const { data } = await db.from('permits').select('ada,title,stage,type,pool,municipality_code,unit_code,issued_at,published_at,document_url').eq('hidden', false).in('ada', missing);
     extra = (data || []).filter((p) => inArea(profile, p.municipality_code));
   }
 

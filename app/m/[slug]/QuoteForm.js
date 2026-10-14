@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function QuoteForm({ slug, name }) {
   const [f, setF] = useState({ name: '', phone: '', email: '', project: 'Νέα πολυκατοικία', area: '', message: '', website: '' });
@@ -47,7 +48,7 @@ export default function QuoteForm({ slug, name }) {
       <input type="text" name="website" value={f.website} onChange={set('website')} tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: -9999, width: 1, height: 1, opacity: 0 }} />
       {state === 'error' && <div className="notice bad">{err}</div>}
       <button className="btn primary big" type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Στέλνουμε…' : 'Στείλε αίτημα'}</button>
-      <span className="fine">Τα στοιχεία σου πηγαίνουν μόνο σε αυτή την επιχείρηση.</span>
+      <span className="fine">Τα στοιχεία σου πηγαίνουν μόνο σε αυτή την επιχείρηση, για να σου απαντήσει. Διαγράφονται από εμάς μετά από 12 μήνες. <Link href="/aporrito" style={{ color: "var(--accent)" }}>Απόρρητο</Link></span>
     </form>
   );
 }

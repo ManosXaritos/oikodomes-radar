@@ -24,7 +24,7 @@ export async function GET(request) {
     const since = c.last_digest_at || new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const units = allowedUnits(c);
     if (units && !units.length) { skipped++; continue; } // hasn't chosen an area yet
-    let q = db.from('permits').select('*').gt('created_at', since).order('published_at', { ascending: false }).limit(300);
+    let q = db.from('permits').select('*').eq('hidden', false).gt('created_at', since).order('published_at', { ascending: false }).limit(300);
     if (units) q = q.in('unit_code', units);
     const { data: permits } = await q;
     const list = (permits || []).filter((p) => fitsAny(p, c.products));

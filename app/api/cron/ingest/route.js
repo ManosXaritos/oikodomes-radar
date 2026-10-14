@@ -27,7 +27,9 @@ export async function GET(request) {
       inserted += (data || []).length;
     }
     const located = await geocodeMissing(db, { limit: 20, contact, deadline: started + 50_000 });
-    const details = { since: since.toISOString(), found: permits.length, inserted, located };
+    // Data retention (see /aporrito): quote requests are deleted after 12 months.
+    const { count: purged } = await db.from('quote_requests').delete({ count: 'exact' }).lt('created_at', new Date(Date.now() - 365 * 864e5).toISOString());
+    const details = { since: since.toISOString(), found: permits.length, inserted, located, purged: purged || 0 };
     await logRun(db, 'ingest', true, details);
     return NextResponse.json({ ok: true, ...details });
   } catch (err) {
